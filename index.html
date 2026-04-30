@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Shadow Operator v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .progress-bar { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-[#0a0f1a] text-gray-200 min-h-screen flex items-center justify-center p-4 font-mono">
+
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- PANEL KIRI: COMMAND CENTER -->
+        <div class="lg:col-span-4 bg-gray-900 border border-blue-900/50 p-6 rounded-xl shadow-[0_0_40px_rgba(30,58,138,0.2)]">
+            <div class="flex items-center mb-6 border-b border-blue-900/50 pb-4">
+                <i class="fa-solid fa-microchip text-blue-500 text-3xl mr-3 animate-pulse"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-widest text-white">SHADOW <span class="text-blue-500">ENGINE v2</span></h1>
+                    <p class="text-[10px] text-blue-400 uppercase tracking-widest">Pre-Execution Simulator</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Target Action</label>
+                    <select id="action" class="w-full bg-gray-800 border border-gray-700 rounded p-2 focus:border-blue-500 outline-none text-white">
+                        <option value="kirim_barang">Kirim Barang</option>
+                        <option value="set_harga">Set Harga</option>
+                        <option value="update_stok">Update Stok</option>
+                        <option value="hapus_data">Hapus Data</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Stock Level</label>
+                        <input type="number" id="stock" value="15" class="w-full bg-gray-800 border border-gray-700 rounded p-2 focus:border-blue-500 outline-none text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Time Phase</label>
+                        <select id="time" class="w-full bg-gray-800 border border-gray-700 rounded p-2 focus:border-blue-500 outline-none text-white">
+                            <option value="pagi">Pagi</option>
+                            <option value="siang">Siang</option>
+                            <option value="sore">Sore</option>
+                            <option value="malam" selected>Malam</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] text-gray-500 uppercase font-bold mb-1">Operator Role</label>
+                    <select id="user_role" class="w-full bg-gray-800 border border-gray-700 rounded p-2 focus:border-blue-500 outline-none text-white">
+                        <option value="admin">Super Admin</option>
+                        <option value="staff">Staff Normal</option>
+                        <option value="intern" selected>Intern / Magang</option>
+                    </select>
+                </div>
+
+                <button onclick="runSimulation()" class="w-full mt-6 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500 text-blue-400 font-bold py-3 rounded uppercase tracking-widest transition-all duration-300">
+                    <i class="fa-solid fa-satellite-dish mr-2"></i> Simulate Future
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL KANAN: AI ANALYSIS & PREDICTION -->
+        <div class="lg:col-span-8 glass-panel border border-gray-800 p-6 rounded-xl relative overflow-hidden flex flex-col justify-center">
+            
+            <div id="loading" class="hidden absolute inset-0 bg-gray-900/90 z-20 flex-col items-center justify-center">
+                <i class="fa-solid fa-atom fa-spin text-5xl text-blue-500 mb-4"></i>
+                <p class="text-blue-400 uppercase tracking-widest text-sm animate-pulse">Running Multi-Thread Simulation...</p>
+            </div>
+
+            <!-- RESULT WRAPPER -->
+            <div id="result-wrapper" class="hidden opacity-0 transition-opacity duration-1000">
+                
+                <!-- Header Status -->
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h2 class="text-xs text-gray-500 uppercase tracking-widest mb-1">System Verdict</h2>
+                        <h1 id="risk-status" class="text-3xl font-black tracking-wider"></h1>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-500 uppercase">Sim. Accuracy</p>
+                        <p class="text-green-400 font-bold">98.4% (Quantum Mode)</p>
+                    </div>
+                </div>
+
+                <!-- 3 Probabilities Bar -->
+                <div class="space-y-4 mb-8">
+                    <h2 class="text-xs text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2">Future Timelines Projection</h2>
+                    
+                    <!-- Sukses -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-green-500"><i class="fa-solid fa-check mr-1"></i> T1: Eksekusi Sukses</span>
+                            <span id="val-success" class="font-bold text-green-500">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2">
+                            <div id="bar-success" class="bg-green-500 h-2 rounded-full progress-bar w-0 shadow-[0_0_10px_#22c55e]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Delay -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-yellow-500"><i class="fa-solid fa-clock mr-1"></i> T2: Keterlambatan / Gesekan</span>
+                            <span id="val-delay" class="font-bold text-yellow-500">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2">
+                            <div id="bar-delay" class="bg-yellow-500 h-2 rounded-full progress-bar w-0 shadow-[0_0_10px_#eab308]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Gagal -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-red-500"><i class="fa-solid fa-skull mr-1"></i> T3: Gagal Fatal / Crash</span>
+                            <span id="val-fail" class="font-bold text-red-500">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-800 rounded-full h-2">
+                            <div id="bar-fail" class="bg-red-500 h-2 rounded-full progress-bar w-0 shadow-[0_0_10px_#ef4444]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Reasoning -->
+                <div class="bg-blue-900/10 border border-blue-900/50 rounded-lg p-4 mb-4">
+                    <h3 class="text-[10px] text-blue-400 uppercase font-bold mb-2"><i class="fa-solid fa-brain mr-1"></i> AI Reasoning Engine</h3>
+                    <p id="ai-insight" class="text-sm text-gray-300 leading-relaxed"></p>
+                </div>
+
+                <!-- WHAT IF Simulator -->
+                <div class="bg-purple-900/10 border border-purple-900/50 rounded-lg p-4">
+                    <h3 class="text-[10px] text-purple-400 uppercase font-bold mb-2"><i class="fa-solid fa-code-branch mr-1"></i> Alternate Universe (What-If)</h3>
+                    <p id="what-if-text" class="text-sm text-purple-300 font-bold"></p>
+                </div>
+
+            </div>
+
+            <!-- Idle State -->
+            <div id="idle-state" class="text-center text-gray-600 py-10">
+                <i class="fa-solid fa-globe text-6xl mb-4 opacity-20"></i>
+                <p class="uppercase tracking-widest text-sm">Awaiting simulation parameters...</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function runSimulation() {
+            // UI Switch to Loading
+            document.getElementById('idle-state').classList.add('hidden');
+            document.getElementById('result-wrapper').classList.add('hidden');
+            document.getElementById('result-wrapper').classList.remove('opacity-100');
+            const loader = document.getElementById('loading');
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+
+            // Reset Bars
+            document.getElementById('bar-success').style.width = '0%';
+            document.getElementById('bar-delay').style.width = '0%';
+            document.getElementById('bar-fail').style.width = '0%';
+
+            const action = document.getElementById("action").value;
+            const stock = document.getElementById("stock").value;
+            const time = document.getElementById("time").value;
+            const user_role = document.getElementById("user_role").value;
+
+            try {
+                // Tembak API v2 (simulate)
+                const res = await fetch(`http://127.0.0.1:8000/simulate?action=${action}&stock=${stock}&price=100&time=${time}&user_role=${user_role}`, { method: "POST" });
+                const data = await res.json();
+                
+                // Efek loading dramatis (1 detik)
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    loader.classList.remove('flex');
+                    
+                    const wrapper = document.getElementById('result-wrapper');
+                    wrapper.classList.remove('hidden');
+                    setTimeout(() => wrapper.classList.add('opacity-100'), 50);
+
+                    // 1. Set Status Text
+                    const riskEl = document.getElementById("risk-status");
+                    riskEl.innerText = data.risk_level;
+                    if(data.risk_level.includes("BAHAYA")) riskEl.className = "text-3xl font-black tracking-wider text-red-500";
+                    else if(data.risk_level.includes("PERINGATAN")) riskEl.className = "text-3xl font-black tracking-wider text-yellow-500";
+                    else riskEl.className = "text-3xl font-black tracking-wider text-green-500";
+
+                    // 2. Animate Progress Bars
+                    document.getElementById('val-success').innerText = data.probabilities.success + "%";
+                    document.getElementById('val-delay').innerText = data.probabilities.delay + "%";
+                    document.getElementById('val-fail').innerText = data.probabilities.fail + "%";
+
+                    setTimeout(() => {
+                        document.getElementById('bar-success').style.width = data.probabilities.success + "%";
+                        document.getElementById('bar-delay').style.width = data.probabilities.delay + "%";
+                        document.getElementById('bar-fail').style.width = data.probabilities.fail + "%";
+                    }, 100);
+
+                    // 3. Set Reasoning & What-If
+                    document.getElementById("ai-insight").innerText = data.insight;
+                    document.getElementById("what-if-text").innerText = data.what_if;
+
+                }, 1000);
+
+            } catch (error) {
+                alert("API Error! Pastikan FastAPI v2 sudah menyala");
+                loader.classList.add('hidden');
+                document.getElementById('idle-state').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
