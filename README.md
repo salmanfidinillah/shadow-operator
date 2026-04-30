@@ -259,6 +259,6 @@ Jika project ini menarik:
 
 ## 🖼️ Preview
 
-![Preview](demo1.png)
-![Preview](demo2.png)
-![Preview](demo3.png)
+![Preview](screenshots/demo1.png)
+![Preview](screenshots/demo2.png)
+![Preview](screenshots/demo3.png)
